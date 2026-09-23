@@ -634,7 +634,9 @@ class Manager implements IManager {
 		}
 
 		// Post share event
-		$this->dispatchEvent(new ShareCreatedEvent($share), 'share created');
+		$event = new ShareCreatedEvent($share);
+		$this->dispatchEvent($event, 'share created');
+		$share = $event->getShare();
 
 		// Send email if needed
 		if ($this->config->getSystemValueBool('sharing.enable_share_mail', true)) {
@@ -754,7 +756,9 @@ class Manager implements IManager {
 			$share = $provider->update($share);
 		}
 
-		$this->dispatcher->dispatchTyped(new ShareUpdatedEvent($share));
+		$event = new ShareUpdatedEvent($share);
+		$this->dispatcher->dispatchTyped($event);
+		$share = $event->getShare();
 
 		if ($expirationDateUpdated === true) {
 			\OC_Hook::emit(Share::class, 'post_set_expiration_date', [
@@ -809,6 +813,7 @@ class Manager implements IManager {
 
 		$event = new ShareAcceptedEvent($share);
 		$this->dispatchEvent($event, 'share accepted');
+		$share = $event->getShare();
 
 		return $share;
 	}
@@ -1069,11 +1074,13 @@ class Manager implements IManager {
 		[$providerId,] = $this->splitFullId($share->getFullId());
 		$provider = $this->factory->getProvider($providerId);
 
-		$result = $provider->restore($share, $recipientId);
+		$share = $provider->restore($share, $recipientId);
 
-		$this->dispatcher->dispatchTyped(new ShareRestoredEvent($share));
+		$event = new ShareRestoredEvent($share);
+		$this->dispatcher->dispatchTyped($event);
+		$share = $event->getShare();
 
-		return $result;
+		return $share;
 	}
 
 	#[Override]
@@ -1104,11 +1111,13 @@ class Manager implements IManager {
 		[$providerId,] = $this->splitFullId($share->getFullId());
 		$provider = $this->factory->getProvider($providerId);
 
-		$result = $provider->move($share, $recipientId);
+		$share = $provider->move($share, $recipientId);
 
-		$this->dispatchEvent(new ShareMovedEvent($share, $recipient), 'share moved');
+		$event = new ShareMovedEvent($share, $recipient);
+		$this->dispatchEvent($event, 'share moved');
+		$share = $event->getShare();
 
-		return $result;
+		return $share;
 	}
 
 	#[Override]
@@ -1491,7 +1500,9 @@ class Manager implements IManager {
 			$provider = $this->factory->getProviderForType($share->getShareType());
 			$provider->update($share);
 
-			$this->dispatcher->dispatchTyped(new ShareUpdatedEvent($share));
+			$event = new ShareUpdatedEvent($share);
+			$this->dispatcher->dispatchTyped($event);
+			$share = $event->getShare();
 		}
 
 		return true;
