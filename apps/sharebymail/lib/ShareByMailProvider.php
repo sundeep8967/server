@@ -7,6 +7,7 @@
 
 namespace OCA\ShareByMail;
 
+use DateTime;
 use OC\Share20\DefaultShareProvider;
 use OC\Share20\Exception\InvalidShare;
 use OC\Share20\Share;
@@ -242,6 +243,7 @@ class ShareByMailProvider extends DefaultShareProvider implements IShareProvider
 			$share->getHideDownload(),
 			$share->getLabel(),
 			$share->getExpirationDate(),
+			$share->getShareTime(),
 			$share->getNote(),
 			$share->getAttributes(),
 			$share->getMailSend(),
@@ -700,6 +702,7 @@ class ShareByMailProvider extends DefaultShareProvider implements IShareProvider
 		?bool $hideDownload,
 		?string $label,
 		?\DateTimeInterface $expirationTime,
+		?DateTime $shareTime,
 		?string $note = '',
 		?IAttributes $attributes = null,
 		?bool $mailSend = true,
@@ -718,7 +721,7 @@ class ShareByMailProvider extends DefaultShareProvider implements IShareProvider
 			->setValue('password', $qb->createNamedParameter($password))
 			->setValue('password_expiration_time', $qb->createNamedParameter($passwordExpirationTime, IQueryBuilder::PARAM_DATETIME_MUTABLE))
 			->setValue('password_by_talk', $qb->createNamedParameter($sendPasswordByTalk, IQueryBuilder::PARAM_BOOL))
-			->setValue('stime', $qb->createNamedParameter(time()))
+			->setValue('stime', $qb->createNamedParameter($shareTime?->getTimestamp() ?? time()))
 			->setValue('hide_download', $qb->createNamedParameter((int)$hideDownload, IQueryBuilder::PARAM_INT))
 			->setValue('label', $qb->createNamedParameter($label))
 			->setValue('note', $qb->createNamedParameter($note))
